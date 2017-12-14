@@ -51,32 +51,32 @@ void exec(VirtualMachine *vm) {
 		//fetch
 		int32_t opcode = NEXTCODE(vm);
 		switch (opcode) { //decode
-        case HALT: return;
-        case CONST_I32:
+		case HALT: return;
+		case CONST_I32:
 			v = NEXTCODE(vm);
 			PUSH(vm, v);
 			break;
-        case ADD_I32:
+		case ADD_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, a + b);
 			break;
-        case SUB_I32:
+		case SUB_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, a - b);
 			break;
-        case MUL_I32:
+		case MUL_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, a * b);
 			break;
-        case LT_I32:
+		case LT_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, (a < b) ? 1 : 0);
 			break;
-        case EQ_I32:
+		case EQ_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, (a == b) ? 1 : 0);
@@ -90,12 +90,12 @@ void exec(VirtualMachine *vm) {
 			if(POP(vm))
 				vm->pc = addr;
 			break;
-        case JMPF:
+		case JMPF:
 			addr = NEXTCODE(vm);
 			if(!POP(vm))
 				vm->pc = addr;
 			break;
-        case LOAD:
+		case LOAD:
 			offset = NEXTCODE(vm);
 			PUSH(vm, vm->locals[vm->lfp + offset]);
 			break;
@@ -104,17 +104,17 @@ void exec(VirtualMachine *vm) {
 			offset = NEXTCODE(vm);
 			vm->locals[vm->lfp + offset] = v;
 			break;
-        case GLOAD:
+		case GLOAD:
 			addr = NEXTCODE(vm);
 			v = vm->locals[addr];
 			PUSH(vm, v);
 			break;
-        case GSTORE:
+		case GSTORE:
 			v = POP(vm);
 			addr = NEXTCODE(vm);
 			vm->locals[addr] = v;
 			break;
-        case CALL:
+		case CALL:
 			// we expect all args to be on the stack
 			addr = NEXTCODE(vm); // get next instruction as an address of procedure jump ...
 			argc = NEXTCODE(vm); // ... and next one as number of arguments to load ...
@@ -135,7 +135,7 @@ void exec(VirtualMachine *vm) {
 			argc = vm->stack[vm->fp - 3];
 			PUSH(vm, vm->stack[vm->fp + (offset - 4 - (argc - 1))]);
 			break;
-        case RET:
+		case RET:
 			v = POP(vm);      // pop return value from top of the stack
 			vm->lsp = vm->lfp;
 			vm->sp = vm->fp;  // ... return from procedure address ...
@@ -146,14 +146,14 @@ void exec(VirtualMachine *vm) {
 			vm->sp -= argc;   // ... discard all of the args left ...
 			PUSH(vm, v);      // ... leave return value on top of the stack
 			break;
-        case POP:
+		case POP:
             (void) POP(vm);    // throw away value at top of the stack
             break;
-        case PRINT:
+		case PRINT:
             v = POP(vm);        // pop value from top of the stack break;
             printf("%d\n", v);  // break; and print it
             break;
-        default:
+		default:
             break;
 		}
 	}
