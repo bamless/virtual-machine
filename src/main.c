@@ -4,6 +4,8 @@
 
 #include "vm.h"
 
+static volatile int begin, end;
+
 long current_time_ms() {
 	struct timeval t;
 	gettimeofday(&t, NULL);
@@ -17,11 +19,67 @@ int fib(int n) {
 	return fib(n - 1) + fib(n - 2);
 }
 
+int fact(int n) {
+	if(n == 0) return 1;
+	return n * fact(n - 1);
+}
+
 int main() {
+	int32_t p2[] = {
+		CALL, 5, 0, 3,
+		HALT,
+		CONST_I32, 1,
+		CONST_I32, 2,
+		CONST_I32, 3,
+		STORE, 2,
+		STORE, 1,
+		STORE, 0,
+		LOAD, 0,
+		PRINT,
+		CALL, 25, 0, 0,//20
+		RET,
+		CONST_I32, 4,
+		STORE, 0,
+		CALL, 37, 0, 1,
+		LOAD, 0,
+		PRINT,
+		RET,
+		CONST_I32, 9,
+		STORE, 0,
+		RET,
+	};
+
+	// bytecode factorial function
+	int32_t n = 3;
+	int32_t factorial[] = {
+		CALL, 6, 0, 0,
+		PRINT,
+		HALT,
+		CONST_I32, n,
+		CALL, 13, 1, 0,//8
+		RET,
+		//int fact(n) {
+		//		if(n == 0) return 1
+		GETARG, 0,
+		CONST_I32, 0,
+		EQ_I32,
+		JMPF, 23,
+		CONST_I32, 1,
+		RET,
+		//else
+		GETARG, 0,
+		CONST_I32, 1,
+		SUB_I32,
+		CALL, 13, 1, 0,
+		GETARG, 0,
+		MUL_I32,
+		RET,
+	};
+
+	//bytecode recursive fibonacci function
 	int32_t fib_addr = 13;
 	int32_t arg = 30;
-
-	int32_t program[] = {
+	int32_t fibonacci[] = {
 		CALL, 6, 0, 0,        // 0 - call main
 		PRINT,				  // 4
 		HALT,                 // 5 - exit
@@ -56,8 +114,8 @@ int main() {
 	   	ADD_I32,              // 50 - since 2 fibs pushed their ret values on the stack, just add them
 	   	RET,                  // 51 - return from procedure
 	};
-	long begin, end;
-	VirtualMachine *vm = create_vm(program, 0, 4096 * 1024);
+
+	VirtualMachine *vm = create_vm(factorial, 0, 4096 * 1024);
 	begin = current_time_ms();
 	exec(vm);
 	end = current_time_ms();
@@ -66,7 +124,7 @@ int main() {
 	printf("Done executing bytecode in: %ldms\n", end - begin);
 
 	begin = current_time_ms();
-	fib(arg);
+	fact(n);
 	end = current_time_ms();
 
 	printf("Done executing native in: %ldms\n", end - begin);
