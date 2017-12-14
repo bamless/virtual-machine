@@ -50,7 +50,7 @@ int main() {
 	};
 
 	// bytecode factorial function
-	int32_t n = 3;
+	int32_t n = 12;
 	int32_t factorial[] = {
 		CALL, 6, 0, 0,
 		PRINT,
