@@ -26,14 +26,14 @@ struct VirtualMachine {
 VirtualMachine* create_vm(int32_t *code, int pc, int datasize) {
 	VirtualMachine *vm = malloc(sizeof(*vm));
 	vm->code = code;
-    vm->pc = pc;
-    vm->fp = 0;
-    vm->sp = -1;
+	vm->pc = pc;
+	vm->fp = 0;
+	vm->sp = -1;
 	vm->lfp = 0;
 	vm->lsp = 0;
 	vm->loc_size = datasize;
 	vm->locals = malloc(sizeof(int32_t) * datasize);
-    vm->stack = malloc(sizeof(int32_t) * STACK_SIZE);
+	vm->stack = malloc(sizeof(int32_t) * STACK_SIZE);
 
 	return vm;
 }
