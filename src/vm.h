@@ -4,7 +4,7 @@
 typedef struct VirtualMachine VirtualMachine;
 
 enum {
-    ADD_I32,    // int add
+	ADD_I32,    // int add
     SUB_I32,    // int sub
     MUL_I32,    // int mul
     LT_I32,     // int less than
@@ -20,7 +20,7 @@ enum {
     PRINT,      // print value on top of the stack
     POP,        // throw away top of the stack
     HALT,       // stop program
-    CALL,       // call procedure
+	CALL,       // call procedure
 	GETARG,
     RET         // return from procedure
 };
