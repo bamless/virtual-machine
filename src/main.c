@@ -4,7 +4,7 @@
 
 #include "vm.h"
 
-static volatile int begin, end;
+static volatile long begin, end;
 
 long current_time_ms() {
 	struct timeval t;
