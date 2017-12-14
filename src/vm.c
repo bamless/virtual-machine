@@ -147,14 +147,14 @@ void exec(VirtualMachine *vm) {
 			PUSH(vm, v);      // ... leave return value on top of the stack
 			break;
 		case POP:
-            (void) POP(vm);    // throw away value at top of the stack
-            break;
+		    (void) POP(vm);    // throw away value at top of the stack
+		    break;
 		case PRINT:
-            v = POP(vm);        // pop value from top of the stack break;
-            printf("%d\n", v);  // break; and print it
-            break;
+		    v = POP(vm);        // pop value from top of the stack break;
+		    printf("%d\n", v);  // break; and print it
+		    break;
 		default:
-            break;
+		    break;
 		}
 	}
 }
