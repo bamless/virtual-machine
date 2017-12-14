@@ -155,6 +155,6 @@ void exec(VirtualMachine *vm) {
             break;
         default:
             break;
-        }
+		}
 	}
 }
