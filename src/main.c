@@ -7,27 +7,27 @@
 static long begin, end;
 
 static 	int32_t p2[] = {
-		CALL, 5, 0, 3,
-		HALT,
-		CONST_I32, 1,
-		CONST_I32, 2,
-		CONST_I32, 3,
-		STORE, 2,
-		STORE, 1,
-		STORE, 0,
-		LOAD, 0,
-		PRINT,
-		CALL, 25, 0, 0,//20
-		RET,
-		CONST_I32, 4,
-		STORE, 0,
-		CALL, 37, 0, 1,
-		LOAD, 0,
-		PRINT,
-		RET,
-		CONST_I32, 9,
-		STORE, 0,
-		RET,
+	CALL, 5, 0, 3,
+	HALT,
+	CONST_I32, 1,
+	CONST_I32, 2,
+	CONST_I32, 3,
+	STORE, 2,
+	STORE, 1,
+	STORE, 0,
+	LOAD, 0,
+	PRINT,
+	CALL, 25, 0, 0,//20
+	RET,
+	CONST_I32, 4,
+	STORE, 0,
+	CALL, 37, 0, 1,
+	LOAD, 0,
+	PRINT,
+	RET,
+	CONST_I32, 9,
+	STORE, 0,
+	RET,
 };
 
 // bytecode factorial function
