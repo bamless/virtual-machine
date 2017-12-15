@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <netinet/in.h>
 
 #include "vm.h"
+#include "opcode.h"
 
 static long begin, end;
 
@@ -96,37 +98,38 @@ static int32_t fibonacci[] = {
 	RET,                  // 51 - return from procedure
 };
 
-long current_time_ms() {
-	struct timeval t;
-	gettimeofday(&t, NULL);
-	return (long) ((t.tv_sec + (t.tv_usec / 1000000.0)) * 1000.0);
-}
+static void conver_to_host_byte_order(int32_t *bytecode, size_t length);
 
-int fib(int n) {
-	if(n == 0 || n == 1)
-		return n;
+int main(int argc, char **argv) {
+	if(argc < 2) {
+		fprintf(stderr, "%s\n", "error: no program file");
+		exit(1);
+	}
 
-	return fib(n - 1) + fib(n - 2);
-}
+	long size;
+	FILE *program = fopen(argv[1], "rb");
+	if(program == NULL) {
+		fprintf(stderr, "error: invalid program file path\n");
+		exit(1);
+	}
+	fseek(program, 0, SEEK_END);
+	size = ftell(program);
+	rewind(program);
 
-int fact(int n) {
-	if(n == 0) return 1;
-	return n * fact(n - 1);
-}
+	unsigned char *bytecode = malloc(sizeof(unsigned char) * size);
+	fread(bytecode, size, 1, program);
 
-int main() {
-	VirtualMachine *vm = create_vm(fibonacci, 0, 4096 * 1024);
-	begin = current_time_ms();
+	fclose(program);
+
+	size /= sizeof(int32_t);
+	conver_to_host_byte_order((int32_t *) bytecode, size);
+	
+	VirtualMachine *vm = create_vm((int32_t*) bytecode, 0, 4096 * 1024);
 	exec(vm);
-	end = current_time_ms();
-	delete_vm(vm);
+}
 
-	printf("Done executing bytecode in: %ldms\n", end - begin);
-
-	begin = current_time_ms();
-	fib(ARG);
-	end = current_time_ms();
-
-	printf("Done executing native in: %ldms\n", end - begin);
-
+static void conver_to_host_byte_order(int32_t *bytecode, size_t length) {
+	for(size_t i = 0; i < length; i++) {
+		bytecode[i] = ntohl(bytecode[i]);
+	}
 }

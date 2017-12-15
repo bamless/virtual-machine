@@ -1,4 +1,5 @@
 #include "vm.h"
+#include "opcode.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -71,15 +72,45 @@ void exec(VirtualMachine *vm) {
 			a = POP(vm);
 			PUSH(vm, a * b);
 			break;
+		case DIV_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, a / b);
+			break;
+		case MOD_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, a % b);
+			break;
 		case LT_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, (a < b) ? 1 : 0);
 			break;
+		case LE_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, (a <= b) ? 1 : 0);
+			break;
+		case GT_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, (a > b) ? 1 : 0);
+			break;
+		case GE_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, (a >= b) ? 1 : 0);
+			break;
 		case EQ_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH(vm, (a == b) ? 1 : 0);
+			break;
+		case NEQ_I32:
+			b = POP(vm);
+			a = POP(vm);
+			PUSH(vm, (a != b) ? 1 : 0);
 			break;
 		case JMP:
 			v = NEXTCODE(vm);
