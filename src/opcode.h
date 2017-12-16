@@ -26,7 +26,8 @@ enum Opcode {
 	POP = 21,        // throw away top of the stack
 	CALL = 22,       // call procedure
 	GETARG = 23,
-	RET = 24        // return from procedure
+	RET = 24,        // return from procedure
+	DUP = 25
 };
 
 #endif

@@ -123,9 +123,10 @@ int main(int argc, char **argv) {
 
 	size /= sizeof(int32_t);
 	conver_to_host_byte_order((int32_t *) bytecode, size);
-	
+
 	VirtualMachine *vm = create_vm((int32_t*) bytecode, 0, 4096 * 1024);
 	exec(vm);
+	delete_vm(vm);
 }
 
 static void conver_to_host_byte_order(int32_t *bytecode, size_t length) {

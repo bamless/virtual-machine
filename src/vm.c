@@ -112,6 +112,10 @@ void exec(VirtualMachine *vm) {
 			a = POP(vm);
 			PUSH(vm, (a != b) ? 1 : 0);
 			break;
+		case DUP:
+			v = vm->stack[vm->sp];
+			PUSH(vm, v);
+			break;
 		case JMP:
 			v = NEXTCODE(vm);
 			vm->pc = v;
