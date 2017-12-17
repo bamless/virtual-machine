@@ -35,6 +35,8 @@ int main(int argc, char **argv) {
 	VirtualMachine *vm = create_vm((bytecode_t *) bytecode, 0, 4096 * 1024);
 	exec(vm);
 	delete_vm(vm);
+
+	free(bytecode);
 }
 
 static void conver_to_host_byte_order(int32_t *bytecode, size_t length) {
