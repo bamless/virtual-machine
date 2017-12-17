@@ -19,15 +19,16 @@ enum Opcode {
 	JMPF = 14,       // branch if false
 	CONST_I32 = 15,  // push constant integer
 	LOAD = 16,       // load from local
-	GLOAD = 17,      // load from global
-	STORE = 18,      // store in local
-	GSTORE = 19,     // store in global memory
-	PRINT = 20,      // print value on top of the stack
-	POP = 21,        // throw away top of the stack
-	CALL = 22,       // call procedure
-	GETARG = 23,
-	RET = 24,        // return from procedure
-	DUP = 25
+	STORE = 17,      // store in local
+	PRINT = 18,      // print value on top of the stack
+	POP = 19,        // throw away top of the stack
+	CALL = 20,       // call procedure
+	GETARG = 21,
+	RET = 22,        // return from procedure
+	DUP = 23,
+
+	CONST_F32 = 24,
+	PRINT_FP = 25,
 };
 
 #endif
