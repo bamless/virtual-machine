@@ -9,7 +9,7 @@ typedef union bytecode_t {
 } bytecode_t;
 typedef struct VirtualMachine VirtualMachine;
 
-VirtualMachine* create_vm();
+VirtualMachine* create_vm(bytecode_t *code, int32_t pc, int32_t datasize);
 void delete_vm(VirtualMachine *vm);
 void exec(VirtualMachine *vm);
 

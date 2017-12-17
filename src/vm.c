@@ -27,7 +27,7 @@ struct VirtualMachine {
 #define POP(vm)         vm->stack[vm->sp--]           // pop value from top of the stack
 #define NEXTCODE(vm)    vm->code[vm->pc++]            // get next bytecode
 
-VirtualMachine* create_vm(bytecode_t *code, int pc, int datasize) {
+VirtualMachine* create_vm(bytecode_t *code, int32_t pc, int32_t datasize) {
 	VirtualMachine *vm = malloc(sizeof(*vm));
 	vm->code = code;
 	vm->pc = pc;
