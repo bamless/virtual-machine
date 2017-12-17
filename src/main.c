@@ -6,7 +6,7 @@
 #include "vm.h"
 #include "opcode.h"
 
-static void conver_to_host_byte_order(int32_t *bytecode, size_t length);
+static void convert_to_host_byte_order(bytecode_t *bytecode, size_t length);
 
 int main(int argc, char **argv) {
 	if(argc < 2) {
@@ -21,26 +21,25 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	fseek(program, 0, SEEK_END);
-	size = ftell(program);
+	size = ftell(program) / sizeof(bytecode_t);
 	rewind(program);
 
-	unsigned char *bytecode = malloc(sizeof(unsigned char) * size);
-	fread(bytecode, size, 1, program);
+	bytecode_t *bytecode = malloc(sizeof(bytecode_t) * size);
+	fread(bytecode, size, sizeof(bytecode_t), program);
 
 	fclose(program);
 
-	size /= sizeof(int32_t);
-	conver_to_host_byte_order((int32_t *) bytecode, size);
+	convert_to_host_byte_order(bytecode, size);
 
-	VirtualMachine *vm = create_vm((bytecode_t *) bytecode, 0, 4096 * 1024);
+	VirtualMachine *vm = create_vm(bytecode, 0, 4096 * 1024);
 	exec(vm);
 	delete_vm(vm);
 
 	free(bytecode);
 }
 
-static void conver_to_host_byte_order(int32_t *bytecode, size_t length) {
+static void convert_to_host_byte_order(bytecode_t *bytecode, size_t length) {
 	for(size_t i = 0; i < length; i++) {
-		bytecode[i] = ntohl(bytecode[i]);
+		bytecode[i].int32 = ntohl(bytecode[i].int32);
 	}
 }
