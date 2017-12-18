@@ -191,7 +191,7 @@ void exec(VirtualMachine *vm) {
 			printf("%f\n", v.fp32);  // ...and print it as a floating point
 			break;
 		default:
-		    break;
+			break;
 		}
 	}
 }
