@@ -15,7 +15,7 @@ struct VirtualMachine {
 
 	int32_t pc;         // program counter (aka. IP - instruction pointer)
 	int32_t sp;         // stack pointer
-	int32_t fp;         // frame pointer (for local scope)
+	int32_t fp;         // frame pointer (for local storage)
 
 	int32_t lfp;        // local data frame pointer
 	int32_t lsp;        // local data stack pointer
@@ -53,8 +53,7 @@ void exec(VirtualMachine *vm) {
 		bytecode_t a, b, v, addr, offset, argc, fsize;
 
 		//fetch
-		bytecode_t opcode = NEXTCODE(vm);
-		switch (opcode.int32) { //decode
+		switch (NEXTCODE(vm).int32) { //decode
 		case HALT: return;
 		case CONST_I32:
 			v = NEXTCODE(vm);
@@ -148,46 +147,48 @@ void exec(VirtualMachine *vm) {
 			break;
 		case CALL:
 			// we expect all args to be on the stack
-			addr = NEXTCODE(vm); // get next instruction as an address of procedure jump ...
-			argc = NEXTCODE(vm); // ... and next one as number of arguments to load ...
-			fsize = NEXTCODE(vm);
+			addr = NEXTCODE(vm);    // get next value in the bytecode as address jump
+			argc = NEXTCODE(vm);    // next one as number of arguments to load
+			fsize = NEXTCODE(vm);   // and the next as the local frame size to allocate
 
-			PUSH(vm, argc);       // ... save num args ...
-			PUSH_I32(vm, vm->fp); // ... save frame pointer ...
-			PUSH_I32(vm, vm->lfp);
-			PUSH_I32(vm, vm->pc); // ... save instruction pointer ...
+			PUSH(vm, argc);         // save args number (used later to discard them from stack)
+			PUSH_I32(vm, vm->fp);   // save the operand stack frame pointer
+			PUSH_I32(vm, vm->lfp);  // save the local storage frame pointer (i.e. current frame start)
+			PUSH_I32(vm, vm->pc);   // save the program counter
 
-			vm->fp  =  vm->sp;  // ... set new frame pointer ...
-			vm->lfp =  vm->lsp;
-			vm->pc  =  addr.int32;    // ... move instruction pointer to target procedure address
-			vm->lsp += fsize.int32;
+			vm->fp  =  vm->sp;      // set the new stack pointer for the operand stack
+			vm->lfp =  vm->lsp;     // set the new stack pointer for the local storage
+			vm->pc  =  addr.int32;  // jump to procedure start
+			vm->lsp += fsize.int32; // increment the local storage frame pointer by the allocated space
 			break;
 		case GETARG:
+			// getting function arg passed by caller they will be found directly
+			// below the current operand stack frame and saved values
 			offset = NEXTCODE(vm);
 			argc = vm->stack[vm->fp - 3];
 			PUSH(vm, vm->stack[vm->fp + (offset.int32 - 4 - (argc.int32 - 1))]);
 			break;
 		case RET:
-			v = POP(vm);      // pop return value from top of the stack
-			vm->lsp = vm->lfp;
-			vm->sp = vm->fp;  // ... return from procedure address ...
-			vm->pc = POP(vm).int32; // ... restore instruction pointer ...
-			vm->lfp = POP(vm).int32;
-			vm->fp = POP(vm).int32; // ... restore framepointer ...
-			argc = POP(vm);   // ... hom many args procedure has ...
-			vm->sp -= argc.int32;   // ... discard all of the args left ...
-			PUSH(vm, v);      // ... leave return value on top of the stack
+			v = POP(vm);             // pop return value from top of the stack
+			vm->lsp = vm->lfp;       // restore the stack pointer for local storage
+			vm->sp = vm->fp;         // restore the stack pointer for the operand stack
+			vm->pc = POP(vm).int32;  // restore instruction pointer
+			vm->lfp = POP(vm).int32; // restore the framepointer for the local storage
+			vm->fp = POP(vm).int32;  // restore frame pointer for operand stack
+			argc = POP(vm);          // get function's args number...
+			vm->sp -= argc.int32;    // ...and discard them from the operator stack
+			PUSH(vm, v);             // re-push the return value on top of the operand stack
 			break;
 		case POP:
-		    (void) POP(vm);    // throw away value at top of the stack
-		    break;
+			(void) POP(vm);          // throw away value at top of the stack
+			break;
 		case PRINT:
-		    v = POP(vm);        // pop value from top of the stack break;
-		    printf("%d\n", v.int32);  // break; and print it
-		    break;
+			v = POP(vm);             // pop value from top of the stack...
+			printf("%d\n", v.int32); // ...and print it
+			break;
 		case PRINT_FP:
-			v = POP(vm);
-			printf("%f\n", v.fp32);
+			v = POP(vm);             // pop the value from top of the stack...
+			printf("%f\n", v.fp32);  // ...and print it as a floating point
 			break;
 		default:
 		    break;

@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	// open bytecode file and get its size
 	long size;
 	FILE *program = fopen(argv[1], "rb");
 	if(program == NULL) {
