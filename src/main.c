@@ -9,32 +9,6 @@
 static void convert_to_host_byte_order(bytecode_t *bytecode, size_t length);
 
 int main(int argc, char **argv) {
-	// int p[] = {
-	// 	//fact(4)
-	// 	CONST_I32, 4,
-	// 	PUSHARG,
-	// 	CALL, 8, 1,
-	// 	PRINT,
-	// 	HALT,
-	// 	//fact(n)
-	// 	//	if(n == 1) return 1
-	// 	LOAD, 0,
-	// 	CONST_I32, 1,
-	// 	EQ_I32,
-	// 	JMPF, 18,
-	// 	CONST_I32, 1,
-	// 	RET,
-	// 	//else
-	// 	LOAD, 0,
-	// 	LOAD, 0,
-	// 	CONST_I32, 1,
-	// 	SUB_I32,
-	// 	PUSHARG,
-	// 	CALL, 8, 1,
-	// 	MUL_I32,
-	// 	RET,
-	// };
-
 	if(argc < 2) {
 		fprintf(stderr, "%s\n", "error: no program file");
 		exit(1);
