@@ -20,15 +20,17 @@ enum Opcode {
 	CONST_I32 = 15, // push int const
 	LOAD = 16,      // load from local (i.e. load from current frame)
 	STORE = 17,     // store in local (i.e. store in current frame)
-	PRINT = 18,     // print value on top of the stack
-	POP = 19,       // throw away top of the stack
-	CALL = 20,      // call procedure
-	GETARG = 21,    // get argument of current procedure call
-	RET = 22,       // return from procedure
-	DUP = 23,       // duplicate the value on top of the stackm
+	PUSHARG = 18,
+	PRINT = 19,     // print value on top of the stack
+	POP = 20,       // throw away top of the stack
+	CALL = 21,      // call procedure
+	GETARG = 22,    // get argument of current procedure call
+	RET = 23,       // return from procedure
+	RETVOID = 24,
+	DUP = 25,       // duplicate the value on top of the stackm
 
-	CONST_F32 = 24, // push floating poiunt const
-	PRINT_FP = 25,  // print value on top of stack as floating point
+	CONST_F32 = 26, // push floating poiunt const
+	PRINT_FP = 27,  // print value on top of stack as floating point
 };
 
 #endif
