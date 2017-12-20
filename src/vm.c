@@ -145,6 +145,7 @@ void exec(VirtualMachine *vm) {
 			v = POP(vm);
 			offset = NEXTCODE(vm);
 			vm->locals[vm->fp + offset.int32] = v;
+			// if the offset exceeds the stack pointer increment it
 			vm->sp = MAX(vm->sp, vm->fp + offset.int32 + 1);
 			continue;
 		case PUSHARG:
@@ -152,28 +153,30 @@ void exec(VirtualMachine *vm) {
 			PUSHARG(vm, v);
 			continue;
 		case CALL:
-			// we expect all args to be on the stack
-			addr = NEXTCODE(vm);    // get next value in the bytecode as address jump
-			argc = NEXTCODE(vm);    // next one as number of arguments to load
+			// we expect all args to be on the local storage stack
+			addr = NEXTCODE(vm);  // get next value in the bytecode as address jump
+			argc = NEXTCODE(vm);  // next one as number of arguments to load
 
-			PUSH_I32(vm, vm->pc);
-			PUSH_I32(vm, vm->fp);   // save the operand stack frame pointer
+			PUSH_I32(vm, vm->pc); // save the program counter
+			PUSH_I32(vm, vm->fp); // save the stack frame pointer
 
-			vm->fp  =  vm->sp - argc.int32;      // set the new stack pointer for the operand stack
+			// set the new frame pointer to stack pointer minus agrs number.
+			// this way the function arguments will be the first n elements in the new frame
+			vm->fp  =  vm->sp - argc.int32;
 			vm->pc = addr.int32;
 			continue;
 		case RET:
-			v = POP(vm);             // pop return value from top of the stack
+			v = POP(vm); // pop return value from top of the stack
 
-			vm->sp = vm->fp;
-			vm->fp = POP(vm).int32;  // restore frame pointer for operand stack
-			vm->pc = POP(vm).int32;  // restore instruction pointer
+			vm->sp = vm->fp;        // reset stack pointer to frame pointer
+			vm->fp = POP(vm).int32; // restore frame pointer for locals stack
+			vm->pc = POP(vm).int32; // restore instruction pointer
 
-			PUSH(vm, v);             // re-push the return value on top of the operand stack
+			PUSH(vm, v); // re-push the return value on top of the operand stack
 			continue;
 		case RETVOID:
 			vm->sp = vm->fp;
-			vm->fp = POP(vm).int32;  // restore frame pointer for operand stack
+			vm->fp = POP(vm).int32;  // restore frame pointer for locals stack
 			vm->pc = POP(vm).int32;  // restore instruction pointer
 			continue;
 		case POP:
@@ -192,3 +195,5 @@ void exec(VirtualMachine *vm) {
 		}
 	}
 }
+
+#undef MAX
