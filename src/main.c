@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+
+#ifdef __unix
 #include <netinet/in.h>
+#elif defined _WIN32
+#include <Windows.h>
+#endif
 
 #include "vm.h"
 #include "opcode.h"

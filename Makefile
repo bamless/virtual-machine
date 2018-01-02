@@ -46,6 +46,10 @@ SRC_EXT = c
 
 ###### SETTINGS END ######
 
+ifeq ($(OS),Windows_NT)
+	LIBS += -lws2_32 #MinGW-w64 Winsock library
+endif
+
 # Recursive wildcard, used to get all c files in SRC directory recursively
 rwildcard = $(foreach d, $(wildcard $1*), $(call rwildcard,$d/,$2) \
 						$(filter $(subst *,%,$2), $d))

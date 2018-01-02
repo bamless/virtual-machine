@@ -2,6 +2,7 @@
 #define VM_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef union bytecode_t {
 	int32_t int32;
