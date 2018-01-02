@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	// open bytecode file and get its size
 	long size;
 	FILE *program = fopen(argv[1], "rb");
 	if(program == NULL) {
@@ -28,13 +29,16 @@ int main(int argc, char **argv) {
 	size = ftell(program) / sizeof(bytecode_t);
 	rewind(program);
 
+	// read bytecode from file
 	bytecode_t *bytecode = malloc(sizeof(bytecode_t) * size);
 	fread(bytecode, size, sizeof(bytecode_t), program);
 
 	fclose(program);
 
+	// convert the byecode to host byte order
 	convert_to_host_byte_order(bytecode, size);
 
+	//execute the code
 	VirtualMachine *vm = create_vm(bytecode, 0, 4096 * 1024);
 	exec(vm);
 	delete_vm(vm);

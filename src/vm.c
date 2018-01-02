@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define STACK_SIZE 4096 * 1024
+#define STACK_SIZE 1024
 
 struct VirtualMachine {
 	int32_t loc_size;
@@ -13,28 +13,27 @@ struct VirtualMachine {
 	bytecode_t *code;   // array of byte codes to be executed
 	bytecode_t *stack;  // oprerator stack
 
-	int32_t pc;         // program counter (aka. IP - instruction pointer)
-	int32_t sp;         // stack pointer
-	int32_t fp;         // frame pointer (for local scope)
+	int32_t opsp;       // stack pointer of operand stack
 
-	int32_t lfp;        // local data frame pointer
-	int32_t lsp;        // local data stack pointer
+	int32_t pc;         // program counter (aka. IP - instruction pointer)
+	int32_t sp;         // stack pointer (points at the end of local storage)
+	int32_t fp;         // frame pointer (points at the start of local storage stack frame)
 };
 
-#define PUSH(vm, v)     vm->stack[++vm->sp] = v       // push value on top of the stack
-#define PUSH_I32(vm, v) vm->stack[++vm->sp].int32 = v // push 32bit integer on top of the stack
-#define PUSH_F32(vm, v) vm->stack[++vm->sp].fp32  = v // push 32bit floating point on top of stack
-#define POP(vm)         vm->stack[vm->sp--]           // pop value from top of the stack
+#define PUSH(vm, v)     vm->stack[++vm->opsp] = v       // push value on top of the stack
+#define PUSH_I32(vm, v) vm->stack[++vm->opsp].int32 = v // push 32bit integer on top of the stack
+#define PUSH_F32(vm, v) vm->stack[++vm->opsp].fp32  = v // push 32bit floating point on top of stack
+#define POP(vm)         vm->stack[vm->opsp--]           // pop value from top of the stack
+#define PUSHARG(vm, v)  vm->locals[vm->sp++] = v
 #define NEXTCODE(vm)    vm->code[vm->pc++]            // get next bytecode
 
 VirtualMachine* create_vm(bytecode_t *code, int32_t pc, int32_t datasize) {
 	VirtualMachine *vm = malloc(sizeof(*vm));
 	vm->code = code;
 	vm->pc = pc;
+	vm->opsp = -1;
 	vm->fp = 0;
-	vm->sp = -1;
-	vm->lfp = 0;
-	vm->lsp = 0;
+	vm->sp = 0;
 	vm->loc_size = datasize;
 	vm->locals = malloc(sizeof(bytecode_t) * datasize);
 	vm->stack = malloc(sizeof(bytecode_t) * STACK_SIZE);
@@ -48,149 +47,153 @@ void delete_vm(VirtualMachine *vm) {
 	free(vm);
 }
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 void exec(VirtualMachine *vm) {
 	for(;;) {
-		bytecode_t a, b, v, addr, offset, argc, fsize;
+		bytecode_t a, b, v, addr, offset, argc;
 
 		//fetch
-		bytecode_t opcode = NEXTCODE(vm);
-		switch (opcode.int32) { //decode
+		switch (NEXTCODE(vm).int32) { //decode
 		case HALT: return;
 		case CONST_I32:
 			v = NEXTCODE(vm);
 			PUSH(vm, v);
-			break;
+			continue;
 		case ADD_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, a.int32 + b.int32);
-			break;
+			continue;
 		case SUB_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, a.int32 - b.int32);
-			break;
+			continue;
 		case MUL_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, a.int32 * b.int32);
-			break;
+			continue;
 		case DIV_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, a.int32 / b.int32);
-			break;
+			continue;
 		case MOD_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, a.int32 % b.int32);
-			break;
+			continue;
 		case LT_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 < b.int32) ? 1 : 0);
-			break;
+			continue;
 		case LE_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 <= b.int32) ? 1 : 0);
-			break;
+			continue;
 		case GT_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 > b.int32) ? 1 : 0);
-			break;
+			continue;
 		case GE_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 >= b.int32) ? 1 : 0);
-			break;
+			continue;
 		case EQ_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 == b.int32) ? 1 : 0);
-			break;
+			continue;
 		case NEQ_I32:
 			b = POP(vm);
 			a = POP(vm);
 			PUSH_I32(vm, (a.int32 != b.int32) ? 1 : 0);
-			break;
+			continue;
 		case CONST_F32:
 			v = NEXTCODE(vm);
 			PUSH(vm, v);
-			break;
+			continue;
 		case DUP:
 			v = vm->stack[vm->sp];
 			PUSH(vm, v);
-			break;
+			continue;
 		case JMP:
 			v = NEXTCODE(vm);
 			vm->pc = v.int32;
-			break;
+			continue;
 		case JMPT:
 			addr = NEXTCODE(vm);
 			if(POP(vm).int32)
 				vm->pc = addr.int32;
-			break;
+			continue;
 		case JMPF:
 			addr = NEXTCODE(vm);
 			if(!POP(vm).int32)
 				vm->pc = addr.int32;
-			break;
+			continue;
 		case LOAD:
 			offset = NEXTCODE(vm);
-			PUSH(vm, vm->locals[vm->lfp + offset.int32]);
-			break;
+			PUSH(vm, vm->locals[vm->fp + offset.int32]);
+			continue;
 		case STORE:
 			v = POP(vm);
 			offset = NEXTCODE(vm);
-			vm->locals[vm->lfp + offset.int32] = v;
-			break;
-		case CALL:
-			// we expect all args to be on the stack
-			addr = NEXTCODE(vm); // get next instruction as an address of procedure jump ...
-			argc = NEXTCODE(vm); // ... and next one as number of arguments to load ...
-			fsize = NEXTCODE(vm);
-
-			PUSH(vm, argc);       // ... save num args ...
-			PUSH_I32(vm, vm->fp); // ... save frame pointer ...
-			PUSH_I32(vm, vm->lfp);
-			PUSH_I32(vm, vm->pc); // ... save instruction pointer ...
-
-			vm->fp  =  vm->sp;  // ... set new frame pointer ...
-			vm->lfp =  vm->lsp;
-			vm->pc  =  addr.int32;    // ... move instruction pointer to target procedure address
-			vm->lsp += fsize.int32;
-			break;
-		case GETARG:
-			offset = NEXTCODE(vm);
-			argc = vm->stack[vm->fp - 3];
-			PUSH(vm, vm->stack[vm->fp + (offset.int32 - 4 - (argc.int32 - 1))]);
-			break;
-		case RET:
-			v = POP(vm);      // pop return value from top of the stack
-			vm->lsp = vm->lfp;
-			vm->sp = vm->fp;  // ... return from procedure address ...
-			vm->pc = POP(vm).int32; // ... restore instruction pointer ...
-			vm->lfp = POP(vm).int32;
-			vm->fp = POP(vm).int32; // ... restore framepointer ...
-			argc = POP(vm);   // ... hom many args procedure has ...
-			vm->sp -= argc.int32;   // ... discard all of the args left ...
-			PUSH(vm, v);      // ... leave return value on top of the stack
-			break;
-		case POP:
-		    (void) POP(vm);    // throw away value at top of the stack
-		    break;
-		case PRINT:
-		    v = POP(vm);        // pop value from top of the stack break;
-		    printf("%d\n", v.int32);  // break; and print it
-		    break;
-		case PRINT_FP:
+			vm->locals[vm->fp + offset.int32] = v;
+			// if the offset exceeds the stack pointer increment it
+			vm->sp = MAX(vm->sp, vm->fp + offset.int32 + 1);
+			continue;
+		case PUSHARG:
 			v = POP(vm);
-			printf("%f\n", v.fp32);
-			break;
+			PUSHARG(vm, v);
+			continue;
+		case CALL:
+			// we expect all args to be on the local storage stack
+			addr = NEXTCODE(vm);  // get next value in the bytecode as address jump
+			argc = NEXTCODE(vm);  // next one as number of arguments to load
+
+			PUSH_I32(vm, vm->pc); // save the program counter
+			PUSH_I32(vm, vm->fp); // save the stack frame pointer
+
+			// set the new frame pointer to stack pointer minus agrs number.
+			// this way the function arguments will be the first n elements in the new frame
+			vm->fp  =  vm->sp - argc.int32;
+			vm->pc = addr.int32;
+			continue;
+		case RET:
+			v = POP(vm); // pop return value from top of the stack
+
+			vm->sp = vm->fp;        // reset stack pointer to frame pointer
+			vm->fp = POP(vm).int32; // restore frame pointer for locals stack
+			vm->pc = POP(vm).int32; // restore instruction pointer
+
+			PUSH(vm, v); // re-push the return value on top of the operand stack
+			continue;
+		case RETVOID:
+			vm->sp = vm->fp;
+			vm->fp = POP(vm).int32;  // restore frame pointer for locals stack
+			vm->pc = POP(vm).int32;  // restore instruction pointer
+			continue;
+		case POP:
+			(void) POP(vm);          // throw away value at top of the stack
+			continue;
+		case PRINT:
+			v = POP(vm);             // pop value from top of the stack...
+			printf("%d\n", v.int32); // ...and print it
+			continue;
+		case PRINT_FP:
+			v = POP(vm);             // pop the value from top of the stack...
+			printf("%f\n", v.fp32);  // ...and print it as a floating point
+			continue;
 		default:
-		    break;
+			continue;
 		}
 	}
 }
+
+#undef MAX
