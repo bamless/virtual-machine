@@ -1,14 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef __unix
-#include <netinet/in.h>
-#elif defined _WIN32
-#include <Windows.h>
-#endif
-
 #include "vm.h"
 #include "opcode.h"
+#include "endian.h"
 
 static void convert_to_host_byte_order(bytecode_t *bytecode, size_t length);
 
@@ -47,7 +42,6 @@ int main(int argc, char **argv) {
 }
 
 static void convert_to_host_byte_order(bytecode_t *bytecode, size_t length) {
-	for(size_t i = 0; i < length; i++) {
-		bytecode[i].int32 = ntohl(bytecode[i].int32);
-	}
+	for(size_t i = 0; i < length; i++)
+		bytecode[i].int32 = be32toh(bytecode[i].int32);
 }
