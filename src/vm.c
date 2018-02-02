@@ -20,12 +20,10 @@ struct VirtualMachine {
 	int32_t fp;         // frame pointer (points at the start of local storage stack frame)
 };
 
-#define PUSH(vm, v)     vm->stack[++vm->opsp] = v       // push value on top of the stack
-#define PUSH_I32(vm, v) vm->stack[++vm->opsp].int32 = v // push 32bit integer on top of the stack
-#define PUSH_F32(vm, v) vm->stack[++vm->opsp].fp32  = v // push 32bit floating point on top of stack
-#define POP(vm)         vm->stack[vm->opsp--]           // pop value from top of the stack
-#define PUSHARG(vm, v)  vm->locals[vm->sp++] = v
-#define NEXTCODE(vm)    vm->code[vm->pc++]            // get next bytecode
+#define PUSH(vm, v)     (vm->stack[++vm->opsp] = (bytecode_t)(v)) // push value on top of the stack
+#define POP(vm)         (vm->stack[vm->opsp--])                   // pop value from top of the stack
+#define PUSHARG(vm, v)  (vm->locals[vm->sp++] = v)                //push values beyond curr frame as args to the next
+#define NEXTCODE(vm)    (vm->code[vm->pc++])                      // get next bytecode
 
 VirtualMachine* create_vm(bytecode_t *code, int32_t pc, int32_t datasize) {
 	VirtualMachine *vm = malloc(sizeof(*vm));
@@ -63,57 +61,57 @@ void exec(VirtualMachine *vm) {
 		case ADD_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, a.int32 + b.int32);
+			PUSH(vm, a.int32 + b.int32);
 			continue;
 		case SUB_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, a.int32 - b.int32);
+			PUSH(vm, a.int32 - b.int32);
 			continue;
 		case MUL_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, a.int32 * b.int32);
+			PUSH(vm, a.int32 * b.int32);
 			continue;
 		case DIV_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, a.int32 / b.int32);
+			PUSH(vm, a.int32 / b.int32);
 			continue;
 		case MOD_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, a.int32 % b.int32);
+			PUSH(vm, a.int32 % b.int32);
 			continue;
 		case LT_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 < b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 < b.int32) ? 1 : 0);
 			continue;
 		case LE_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 <= b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 <= b.int32) ? 1 : 0);
 			continue;
 		case GT_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 > b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 > b.int32) ? 1 : 0);
 			continue;
 		case GE_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 >= b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 >= b.int32) ? 1 : 0);
 			continue;
 		case EQ_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 == b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 == b.int32) ? 1 : 0);
 			continue;
 		case NEQ_I32:
 			b = POP(vm);
 			a = POP(vm);
-			PUSH_I32(vm, (a.int32 != b.int32) ? 1 : 0);
+			PUSH(vm, (a.int32 != b.int32) ? 1 : 0);
 			continue;
 		case CONST_F32:
 			v = NEXTCODE(vm);
@@ -157,8 +155,8 @@ void exec(VirtualMachine *vm) {
 			addr = NEXTCODE(vm);  // get next value in the bytecode as address jump
 			argc = NEXTCODE(vm);  // next one as number of arguments to load
 
-			PUSH_I32(vm, vm->pc); // save the program counter
-			PUSH_I32(vm, vm->fp); // save the stack frame pointer
+			PUSH(vm, vm->pc); // save the program counter
+			PUSH(vm, vm->fp); // save the stack frame pointer
 
 			// set the new frame pointer to stack pointer minus agrs number.
 			// this way the function arguments will be the first n elements in the new frame

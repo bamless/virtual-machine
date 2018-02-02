@@ -3,6 +3,9 @@
 
 #include <stdlib.h>
 
+#define reinterpret_cast(type, val) \
+	(((union { __typeof__(val) v; type r; }) val).r)
+
 typedef union bytecode_t {
 	int32_t int32;
 	float   fp32;
