@@ -2,6 +2,7 @@
 #define VM_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #define reinterpret_cast(type, val) \
 	(((union { __typeof__(val) v; type r; }) val).r)
