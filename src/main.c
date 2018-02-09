@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
 
 	// open bytecode file and get its size
 	long size;
-	FILE *program = fopen(argv[1], "rb");
+	FILE *program = fopen(argv[1], "r+b");
 	if(program == NULL) {
 		fprintf(stderr, "error: invalid program file path\n");
 		exit(1);
